@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\extent">
+      <UniqueIdentifier>{71ed322a-fe47-4819-b7f7-e118bfbd4335}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\xdr">
+      <UniqueIdentifier>{3f51bc8b-6c28-4a7d-8635-808c260ac6be}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="sul-serialize\serialize.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sul-serialize\serialize_more_filter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sul-serialize\extent\boost_container_serialize.hpp">
+      <Filter>Header Files\extent</Filter>
+    </ClInclude>
+    <ClInclude Include="sul-serialize\extent\stl_continaer_serialize.hpp">
+      <Filter>Header Files\extent</Filter>
+    </ClInclude>
+    <ClInclude Include="sul-serialize\extent\string_serialize.hpp">
+      <Filter>Header Files\extent</Filter>
+    </ClInclude>
+    <ClInclude Include="sul-serialize\xdr\xdr.hpp">
+      <Filter>Header Files\xdr</Filter>
+    </ClInclude>
+    <ClInclude Include="sul-serialize\xdr\xdr_convert.hpp">
+      <Filter>Header Files\xdr</Filter>
+    </ClInclude>
+    <ClInclude Include="sul-serialize\xdr\xdr_fundamental_wrap.hpp">
+      <Filter>Header Files\xdr</Filter>
+    </ClInclude>
+    <ClInclude Include="sul-serialize\xdr\xdr_type_define.hpp">
+      <Filter>Header Files\xdr</Filter>
+    </ClInclude>
+    <ClInclude Include="sul-serialize\archive_def.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sul-serialize\archive_size.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sul-serialize\meta_archive.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sul-serialize\single_archive.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sul-serialize\single_archive_dispath.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sul-serialize\archive.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sul-serialize\archive_packages.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sul-serialize\sul_serialize.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sul-serialize\sul_serialize_lib.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="sul-serialize.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\archive.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\archive_packages.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\archive_memory_helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\memory_block.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
