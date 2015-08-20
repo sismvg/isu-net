@@ -303,6 +303,8 @@ public:
 		async_timed_invoke_than(-1, stub, callback, args...);
 	}
 
+	void test()
+	{}
 	/*
 	仅没有callback,其他与async_invoke_than相同
 	*/
