@@ -155,6 +155,10 @@ public:
 	{
 		_disable_more_mission();
 		_abort_all_mission();
+		if (_translation)
+		{
+			_translation->close();
+		}
 		//可以开始析构了
 	}
 
@@ -270,16 +274,15 @@ public:
 				if (callback)
 				{
 					callback(handle, io_success, io_code, exp, 0);
-					return;
 				}
 			}
-
-			if (callback)
+			else if (callback)
 			{
 				//是否需要放到别的线程以及加上防崩溃?
 				callback(handle, io_success, io_code,
 					_make_exception(RPCMSG_CALLBACK_USE), 0);
 			}
+			delete[] pair.second.buffer;
 		};
 
 		/*
@@ -296,15 +299,15 @@ public:
 	callback:当rpc函数执行完毕会被调用
 	args:函数的参数
 	*/
-	template<class Stub, class Func, class... Arg>
-	void async_invoke_than(const Stub& stub, const Func& callback, Arg&&... args)
+	template<class Address,class Stub, class Func, class... Arg>
+	void async_invoke_than(const Address& addr,
+		const Stub& stub, const Func& callback, Arg&&... args)
 	{
 		//-1 forever;
-		async_timed_invoke_than(-1, stub, callback, args...);
+		async_timed_invoke_than(addr, -1, stub,
+			callback, args...);
 	}
 
-	void test()
-	{}
 	/*
 	仅没有callback,其他与async_invoke_than相同
 	*/
@@ -364,9 +367,10 @@ private:
 		if (!sync)
 		{
 			_timer_arg* arg = new _timer_arg;
-		//	arg->callback = reinterpret_cast<inside_callback_type*>(body.trunk);
+			arg->callback = &_missions[dest][ident.head.xid];
 			arg->xid = ident.head.xid;
-			body.handle = _timeout_timer.set_timer(arg, timeout_ms);
+			body.trunk =
+				reinterpret_cast<void*>(_timeout_timer.set_timer(arg, timeout_ms));
 		}
 
 		auto size = archived_size(body) + archived_size(stack);
@@ -432,6 +436,12 @@ private:
 
 			auto iter = _missions.find(from);
 			auto xid_iter = iter->second.find(reply.head.xid);
+
+			if (reply.trunk)
+			{
+				_timeout_timer.cancel_timer(
+					reinterpret_cast<timer_handle>(reply.trunk));
+			}
 
 			(xid_iter->second)(handle, io_success, io_code,
 				_to_session_stat(reply.what, reply.stat), memory);

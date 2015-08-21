@@ -67,9 +67,9 @@ public:
 	void push(void* buffer, size_type length);
 private:
 	analysis_callback _callback;
-	char* const _start;
-	char _header_buffer[64];
-	size_type _recved_header_length;
+
+	shared_memory _head;
+	stream_wrap _head_wrap;
 
 	shared_memory _memory;
 	stream_wrap _wrap;
@@ -81,6 +81,7 @@ private:
 	void _copy_and_try_call(void*& buffer, size_type& length);
 	//检测 buffer,length是否有效
 	bool _check_safe(void* buffer, size_type length);
+	void _reset_head();
 };
 
 struct stream_header
@@ -151,7 +152,7 @@ void datagram_tcp::send(const_memory_address buffer, size_type size)
 {
 #ifdef _WINDOWS
 
-	auto* lapped = new datagram_tcp_overlapped(this);
+	//auto* lapped = new datagram_tcp_overlapped(this);
 	const size_type buffer_count = 2;
 
 	shared_memory header = archive(xdr_uint32(size));
@@ -162,8 +163,9 @@ void datagram_tcp::send(const_memory_address buffer, size_type size)
 		{ size, reinterpret_cast<char*>(const_cast<void*>(buffer)) }
 	};
 
+	DWORD count = 0;
 	WSASend(_socket.socket(), buffers_with_header, buffer_count,
-		NULL, 0, lapped, _send_complete);
+		&count, 0, NULL, NULL);
 #endif
 
 #ifdef _LINUX
@@ -244,7 +246,7 @@ stream_wrap::size_type stream_wrap::
 		(buffer_size + _was_append) <= _maxinum ?
 	buffer_size : _maxinum - _was_append;
 
-	mymemcpy(_stream, buffer, need_copy);
+	mymemcpy(_stream + _was_append, buffer, need_copy);
 	_was_append += need_copy;
 	return need_copy;
 }
@@ -264,8 +266,9 @@ bool datagram_tcp::_try_to_recover(int length)
 }
 
 stream_analysis::stream_analysis(analysis_callback callback)
-	:_callback(callback), _recved_header_length(0), _start(_header_buffer)
+	:_callback(callback), _head(new char[4], 4)
 {
+	_reset_head();
 }
 
 void stream_analysis::push(void* buffer, size_type length)
@@ -276,29 +279,26 @@ void stream_analysis::push(void* buffer, size_type length)
 	}
 }
 
+void stream_analysis::_reset_head()
+{
+	_head_wrap = stream_wrap(_head.get(), _head.size());
+}
+
 bool stream_analysis::
 	_try_analysis_head(void*& buffer, size_type& length)
 {
 	if (!_check_safe(buffer, length))
 			return false;
-
-	if (_recved_header_length == sizeof(stream_header))
+	if (_head_wrap.is_complete())
 		return true;
-	size_type need_copy =
-		(_recved_header_length + length) >= sizeof(stream_header) ?
-			sizeof(stream_header) - _recved_header_length
-			:
-			length;
 
-	mymemcpy(_header_buffer + _recved_header_length, buffer, need_copy);	
-	_recved_header_length += need_copy;
-	advance_in(buffer, length, need_copy);
+	advance_in(buffer, length, _head_wrap.append(buffer, length));
 
-	if (_recved_header_length == sizeof(stream_header))
+	if (_head_wrap.is_complete())
 	{
 		//收到了全部的头部
 		stream_header header;
-		auto* ptr = reinterpret_cast<size_type*>(_header_buffer);
+		auto* ptr = reinterpret_cast<size_type*>(_head.get());
 		header.length = *ptr;
 		memory_block block(new char[header.length], header.length);
 		_memory = shared_memory(block);
@@ -314,16 +314,14 @@ void stream_analysis::_copy_and_try_call(void*& buffer, size_type& length)
 {
 	if (!_check_safe(buffer, length))
 			return;
-	size_type need_copy = (std::min)(length, _wrap.stream_size());
-	size_type was_append = _wrap.append(buffer, need_copy);
-	advance_in(buffer, length, was_append);
 
+	advance_in(buffer, length, _wrap.append(buffer, length));
 	if (_wrap.is_complete())
 	{
 		_callback(_memory);
 		_memory.reset();
-		_recved_header_length = 0;
 		_wrap.cleanup();
+		_reset_head();
 	}
 }
 
@@ -377,8 +375,21 @@ datagram_tcp_server::datagram_tcp_server(const core_sockaddr& address)
 void datagram_tcp_server::send(const address_type& dest,
 	const_memory_address buffer, size_type size)
 {
-	::send(dest.socket(), reinterpret_cast<char*>(&size), sizeof(size_type), 0);
-	::send(dest.socket(), reinterpret_cast<const char*>(buffer), size, 0);
+	const size_type buffer_count = 2;
+
+	shared_memory header = archive(xdr_uint32(size));
+
+#ifdef _WINDOWS
+	WSABUF buffers_with_header[2] =
+	{
+		{ header.size(), header.get() },
+		{ size, reinterpret_cast<char*>(const_cast<void*>(buffer)) }
+	};
+
+	DWORD count = 0;
+	WSASend(dest.socket(), buffers_with_header, buffer_count,
+		&count, 0, NULL, NULL);
+#endif
 }
 
 void datagram_tcp_server::close()

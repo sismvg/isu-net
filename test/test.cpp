@@ -15,7 +15,7 @@
 
 #include <boost/threadpool/pool.hpp>
 #include <isu-net/des_verify.hpp>
-//#include <vld.h>
+#include <vld.h>
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib,"sul-serialize.lib")
 #pragma comment(lib,"imou-rpc-server.lib")
@@ -94,18 +94,20 @@ int _tmain(int argc, _TCHAR* argv[])
 //	cout << rvalue << endl;
 	cout << "----------------------------" << endl;
 	auto tick = GetTickCount();
-	for (unsigned int index = 0; index != 1; ++index)
+	for (unsigned int index = 0; index != 10000; ++index)
 	{
 		try
 		{
-			client->async_invoke_than(client_sock->native_socket(),
-				[&](const const_shared_memory&,//Òì²½¾ä±ú
-				bool, const std::size_t&,//io×´Ì¬
-				const std::shared_ptr<rpc_exception>&,//rpcÒì³£
-				std::size_t)
+			client->async_invoke_than(client_sock->native_socket(),myfunc_client,
+			[&,index](const const_shared_memory&,//Òì²½¾ä±ú
+			bool, const std::size_t&,//io×´Ì¬
+			const std::shared_ptr<rpc_exception>&,//rpcÒì³£
+			std::size_t)
 			{
-				cout << "ok" << endl;
+			//	cout << index << endl;
 			}, 20, 10);
+			//cout << client->invoke(client_sock->native_socket(), myfunc_client,
+			//	10, 20) << endl;
 		//	cout << index << endl;
 		}
 		catch (rpc_local_timeout& err)

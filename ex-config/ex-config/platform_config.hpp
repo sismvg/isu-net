@@ -29,8 +29,8 @@ typedef FD file_descriptor;
 
 #endif
 #include <memory>
-inline void mymemcpy(void* src, const void* dest, unsigned int count)
+inline void mymemcpy(void* dest, const void* src, unsigned int count)
 {
-	memcpy(src, dest, count);
+	memcpy(dest, src, count);
 }
 #endif

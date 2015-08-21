@@ -60,6 +60,8 @@ public:
 
 	~imouto_rpc_server()
 	{
+		if (_translation)
+			_translation->close();
 		_threads->wait();
 	}
 
@@ -212,13 +214,13 @@ private:
 		{
 			memory_block arguments;
 			rarchive(memory, arguments);
+			shared_memory tmp(arguments);
+
 			verify_xid(from, body->body.head.xid);
-			_threads->schedule([&,pair,body,arguments,from,reply,handle]()
+			_threads->schedule([&,pair,body,arguments,from,reply,handle,tmp]()
 			{
 				_call_stub(from, reply, *pair.first->second,
 					handle, arguments, body);
-				//WAR.delete
-				delete arguments.buffer;
 			});
 		}
 		else
@@ -298,7 +300,7 @@ private:
 	template<class... Arg>
 	void _reply(const address_type& from, const Arg&... args)
 	{
-		auto mem_ptr = archive(archived_size(args...), args...);
+		shared_memory mem_ptr = archive(archived_size(args...), args...);
 		const_memory_block mem = mem_ptr;
 
 		_translation->send(from, mem.buffer, mem.size);
